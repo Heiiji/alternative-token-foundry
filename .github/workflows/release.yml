@@ -1,0 +1,56 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Derive version from tag
+        id: v
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Stamp module.json (version + manifest/download URLs)
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+          TAG: ${{ github.ref_name }}
+          REPO: ${{ github.repository }}
+        run: |
+          node -e '
+            const fs = require("fs");
+            const m = JSON.parse(fs.readFileSync("module.json", "utf8"));
+            m.version = process.env.VERSION;
+            m.url = `https://github.com/${process.env.REPO}`;
+            m.manifest = `https://github.com/${process.env.REPO}/releases/latest/download/module.json`;
+            m.download = `https://github.com/${process.env.REPO}/releases/download/${process.env.TAG}/module.zip`;
+            fs.writeFileSync("module.json", JSON.stringify(m, null, 2) + "\n");
+            console.log("Stamped module.json:", m.version, m.download);
+          '
+
+      - name: Build module.zip
+        run: |
+          zip -r module.zip \
+            module.json \
+            scripts \
+            templates \
+            styles \
+            lang \
+            README.md \
+            LICENSE \
+            -x "*.DS_Store"
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: v${{ steps.v.outputs.version }}
+          files: |
+            module.json
+            module.zip

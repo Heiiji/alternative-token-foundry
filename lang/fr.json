@@ -1,0 +1,50 @@
+{
+  "ATF.settings.menuName": "Images de jeton alternatives",
+  "ATF.settings.menuLabel": "Configurer les images de jeton",
+  "ATF.settings.menuHint": "Définissez deux apparences de jeton approuvées entre lesquelles les joueurs peuvent basculer.",
+
+  "ATF.hud.switchTo": "Passer en {label}",
+  "ATF.hud.outOfSync": "L'image actuelle ne correspond à aucune forme — cliquez pour choisir",
+  "ATF.hud.noGM": "Aucun Maître de Jeu connecté — basculement indisponible",
+
+  "ATF.artMode.standard": "Jeton standard",
+  "ATF.artMode.ring": "Sujet d'anneau dynamique",
+
+  "ATF.config.hint": "Configurez deux images de jeton approuvées par personnage. Seuls les joueurs propriétaires du personnage peuvent basculer, et uniquement entre les images définies ici.",
+  "ATF.config.enabled": "Activé",
+  "ATF.config.imageA": "Image A",
+  "ATF.config.imageB": "Image B",
+  "ATF.config.labelPlaceholder": "Libellé (ex. Normal)",
+  "ATF.config.pathPlaceholder": "Chemin de l'image",
+  "ATF.config.browse": "Parcourir…",
+  "ATF.config.apply": "Appliquer",
+  "ATF.config.artModeLabel": "Type d'image :",
+  "ATF.config.useCurrentAsA": "Utiliser l'actuelle comme A",
+  "ATF.config.remove": "Supprimer",
+  "ATF.config.save": "Enregistrer",
+  "ATF.config.noActors": "Aucun personnage possédé par un joueur. Attribuez un personnage à un joueur, puis rouvrez cette fenêtre.",
+  "ATF.config.defaultLabelA": "Normal",
+  "ATF.config.defaultLabelB": "Armuré",
+
+  "ATF.dialog.outOfSyncTitle": "Choisir une apparence",
+  "ATF.dialog.outOfSyncContent": "L'image actuelle de ce jeton ne correspond à aucune apparence configurée. Laquelle appliquer ?",
+
+  "ATF.notify.switched": "Apparence modifiée.",
+  "ATF.notify.saved": "Configuration des images de jeton enregistrée.",
+  "ATF.notify.applied": "Apparence appliquée : {label}.",
+  "ATF.notify.removed": "Configuration supprimée.",
+
+  "ATF.errors.noConfig": "Aucune configuration.",
+  "ATF.errors.imageARequired": "L'image A est requise.",
+  "ATF.errors.imageBRequired": "L'image B est requise.",
+  "ATF.errors.imagesMustDiffer": "L'image A et l'image B doivent être différentes.",
+  "ATF.errors.labelARequired": "Le libellé A est requis.",
+  "ATF.errors.labelBRequired": "Le libellé B est requis.",
+  "ATF.errors.notEnabled": "Le basculement d'apparence n'est pas activé pour ce personnage.",
+  "ATF.errors.notOwner": "Vous ne possédez pas ce personnage.",
+  "ATF.errors.invalidTarget": "Apparence demandée invalide.",
+  "ATF.errors.expired": "La demande de basculement a expiré. Veuillez réessayer.",
+  "ATF.errors.noImage": "L'apparence sélectionnée n'a pas d'image.",
+  "ATF.errors.syncFailed": "Impossible de changer d'apparence. L'image précédente a été restaurée.",
+  "ATF.errors.switchFailed": "Impossible de changer d'apparence."
+}

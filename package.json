@@ -1,0 +1,14 @@
+{
+  "name": "alternative-token-foundry",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Foundry VTT module: switch a character token between two GM-approved appearances.",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.9"
+  },
+  "license": "MIT"
+}

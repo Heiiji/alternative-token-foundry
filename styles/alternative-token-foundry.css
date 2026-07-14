@@ -1,0 +1,141 @@
+/* ------------------------------------------------------------------ *
+ * Token HUD button
+ * ------------------------------------------------------------------ */
+.control-icon.atf-switch {
+  position: relative;
+}
+.control-icon.atf-switch.atf-warn i {
+  color: #ffb347;
+}
+.control-icon.atf-switch.atf-disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.control-icon.atf-switch.atf-processing {
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------------ *
+ * GM configuration screen
+ * ------------------------------------------------------------------ */
+.atf-config .atf-config-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.5rem;
+}
+.atf-config .atf-hint {
+  margin: 0;
+  font-style: italic;
+  opacity: 0.8;
+}
+.atf-config .atf-actors {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.atf-config .atf-actor {
+  border: 1px solid var(--color-border-light-tertiary, #782e22);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem 0.75rem;
+}
+.atf-config .atf-actor-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+.atf-config .atf-portrait {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border: none;
+  border-radius: 4px;
+}
+.atf-config .atf-actor-name {
+  font-weight: bold;
+  flex: 1;
+}
+.atf-config .atf-enabled {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
+  flex: none;
+}
+.atf-config .atf-slots {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+.atf-config .atf-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  border: 1px dashed rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  padding: 0.5rem;
+}
+.atf-config .atf-slot-title {
+  font-weight: bold;
+  font-size: var(--font-size-13, 0.8rem);
+}
+.atf-config .atf-preview {
+  width: 100%;
+  height: 96px;
+  object-fit: contain;
+  background: rgba(0, 0, 0, 0.15);
+  border: none;
+  border-radius: 4px;
+}
+.atf-config .atf-path-row {
+  display: flex;
+  gap: 0.25rem;
+}
+.atf-config .atf-path {
+  flex: 1;
+  min-width: 0;
+}
+.atf-config .atf-icon-btn {
+  flex: none;
+  width: 32px;
+}
+.atf-config .atf-actor-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+.atf-config .atf-artmode {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.atf-config .atf-actor-actions {
+  display: flex;
+  gap: 0.35rem;
+}
+.atf-config .atf-danger {
+  color: #7a1f1f;
+}
+.atf-config .atf-empty {
+  text-align: center;
+  opacity: 0.7;
+  padding: 1rem;
+}
+.atf-config .atf-footer {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid rgba(0, 0, 0, 0.15);
+  padding-top: 0.5rem;
+}
+.atf-config .atf-save {
+  flex: none;
+  width: auto;
+  padding: 0 1rem;
+}

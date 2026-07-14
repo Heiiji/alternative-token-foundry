@@ -1,0 +1,87 @@
+<div class="atf-config-body">
+  <p class="atf-hint">{{localize "ATF.config.hint"}}</p>
+
+  {{#if hasActors}}
+  <div class="atf-actors">
+    {{#each actors as |actor|}}
+    <fieldset class="atf-actor" data-actor-id="{{actor.id}}">
+      <legend class="atf-actor-head">
+        <img class="atf-portrait" src="{{actor.img}}" alt="" />
+        <span class="atf-actor-name">{{actor.name}}</span>
+        <label class="atf-enabled">
+          <input type="checkbox" name="actors.{{actor.id}}.enabled" {{#if actor.enabled}}checked{{/if}} />
+          {{localize "ATF.config.enabled"}}
+        </label>
+      </legend>
+
+      <div class="atf-slots">
+        {{!-- Slot A --}}
+        <div class="atf-slot">
+          <div class="atf-slot-title">{{localize "ATF.config.imageA"}}</div>
+          <img class="atf-preview" data-preview="{{actor.id}}.a" src="{{actor.a.src}}" alt="" />
+          <input type="text" class="atf-label" name="actors.{{actor.id}}.a.label"
+                 value="{{actor.a.label}}" placeholder="{{localize 'ATF.config.labelPlaceholder'}}" />
+          <div class="atf-path-row">
+            <input type="text" class="atf-path" name="actors.{{actor.id}}.a.src"
+                   value="{{actor.a.src}}" placeholder="{{localize 'ATF.config.pathPlaceholder'}}" />
+            <button type="button" class="atf-icon-btn" data-action="pickImage"
+                    data-actor-id="{{actor.id}}" data-slot="a"
+                    data-tooltip="{{localize 'ATF.config.browse'}}">
+              <i class="fas fa-file-image"></i>
+            </button>
+          </div>
+          <button type="button" class="atf-apply" data-action="applySlot"
+                  data-actor-id="{{actor.id}}" data-slot="a">{{localize "ATF.config.apply"}}</button>
+        </div>
+
+        {{!-- Slot B --}}
+        <div class="atf-slot">
+          <div class="atf-slot-title">{{localize "ATF.config.imageB"}}</div>
+          <img class="atf-preview" data-preview="{{actor.id}}.b" src="{{actor.b.src}}" alt="" />
+          <input type="text" class="atf-label" name="actors.{{actor.id}}.b.label"
+                 value="{{actor.b.label}}" placeholder="{{localize 'ATF.config.labelPlaceholder'}}" />
+          <div class="atf-path-row">
+            <input type="text" class="atf-path" name="actors.{{actor.id}}.b.src"
+                   value="{{actor.b.src}}" placeholder="{{localize 'ATF.config.pathPlaceholder'}}" />
+            <button type="button" class="atf-icon-btn" data-action="pickImage"
+                    data-actor-id="{{actor.id}}" data-slot="b"
+                    data-tooltip="{{localize 'ATF.config.browse'}}">
+              <i class="fas fa-file-image"></i>
+            </button>
+          </div>
+          <button type="button" class="atf-apply" data-action="applySlot"
+                  data-actor-id="{{actor.id}}" data-slot="b">{{localize "ATF.config.apply"}}</button>
+        </div>
+      </div>
+
+      <div class="atf-actor-footer">
+        <label class="atf-artmode">
+          {{localize "ATF.config.artModeLabel"}}
+          <select name="actors.{{actor.id}}.artMode">
+            {{#each actor.artModes as |m|}}
+            <option value="{{m.value}}" {{#if m.selected}}selected{{/if}}>{{m.label}}</option>
+            {{/each}}
+          </select>
+        </label>
+        <span class="atf-actor-actions">
+          <button type="button" data-action="useCurrent" data-actor-id="{{actor.id}}">
+            <i class="fas fa-wand-magic-sparkles"></i> {{localize "ATF.config.useCurrentAsA"}}
+          </button>
+          <button type="button" class="atf-danger" data-action="removeActor" data-actor-id="{{actor.id}}">
+            <i class="fas fa-trash"></i> {{localize "ATF.config.remove"}}
+          </button>
+        </span>
+      </div>
+    </fieldset>
+    {{/each}}
+  </div>
+  {{else}}
+  <p class="atf-empty">{{localize "ATF.config.noActors"}}</p>
+  {{/if}}
+
+  <footer class="atf-footer">
+    <button type="submit" class="atf-save">
+      <i class="fas fa-save"></i> {{localize "ATF.config.save"}}
+    </button>
+  </footer>
+</div>

@@ -1,0 +1,50 @@
+{
+  "ATF.settings.menuName": "Alternative Token Images",
+  "ATF.settings.menuLabel": "Configure Token Images",
+  "ATF.settings.menuHint": "Set two approved token appearances players can switch between.",
+
+  "ATF.hud.switchTo": "Switch to {label}",
+  "ATF.hud.outOfSync": "Current art matches neither form — click to choose",
+  "ATF.hud.noGM": "No Game Master online — switching unavailable",
+
+  "ATF.artMode.standard": "Standard token",
+  "ATF.artMode.ring": "Dynamic ring subject",
+
+  "ATF.config.hint": "Configure two approved token images per character. Only players who own the character can switch, and only between the images you set here.",
+  "ATF.config.enabled": "Enabled",
+  "ATF.config.imageA": "Image A",
+  "ATF.config.imageB": "Image B",
+  "ATF.config.labelPlaceholder": "Label (e.g. Normal)",
+  "ATF.config.pathPlaceholder": "Image path",
+  "ATF.config.browse": "Browse…",
+  "ATF.config.apply": "Apply now",
+  "ATF.config.artModeLabel": "Art mode:",
+  "ATF.config.useCurrentAsA": "Use current as A",
+  "ATF.config.remove": "Remove",
+  "ATF.config.save": "Save changes",
+  "ATF.config.noActors": "No player-owned characters found. Assign a character to a player, then reopen this window.",
+  "ATF.config.defaultLabelA": "Normal",
+  "ATF.config.defaultLabelB": "Armored",
+
+  "ATF.dialog.outOfSyncTitle": "Choose an appearance",
+  "ATF.dialog.outOfSyncContent": "This token's current artwork does not match either configured appearance. Which one should it become?",
+
+  "ATF.notify.switched": "Appearance switched.",
+  "ATF.notify.saved": "Token image configuration saved.",
+  "ATF.notify.applied": "Applied appearance: {label}.",
+  "ATF.notify.removed": "Configuration removed.",
+
+  "ATF.errors.noConfig": "No configuration.",
+  "ATF.errors.imageARequired": "Image A is required.",
+  "ATF.errors.imageBRequired": "Image B is required.",
+  "ATF.errors.imagesMustDiffer": "Image A and Image B must be different.",
+  "ATF.errors.labelARequired": "Label A is required.",
+  "ATF.errors.labelBRequired": "Label B is required.",
+  "ATF.errors.notEnabled": "Appearance switching is not enabled for this character.",
+  "ATF.errors.notOwner": "You do not own this character.",
+  "ATF.errors.invalidTarget": "Invalid appearance requested.",
+  "ATF.errors.expired": "The switch request expired. Please try again.",
+  "ATF.errors.noImage": "The selected appearance has no image.",
+  "ATF.errors.syncFailed": "Could not switch appearance. The previous artwork was restored.",
+  "ATF.errors.switchFailed": "Could not switch appearance."
+}
