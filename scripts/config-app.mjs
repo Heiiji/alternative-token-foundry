@@ -24,12 +24,29 @@ function eligibleActors() {
 }
 
 /** Seed config for an actor never configured before: prefill A with its current art. */
-function defaultActorConfig(actor) {
+function defaultActorConfig(actor, { enabledByDefault = false } = {}) {
   return {
-    enabled: false,
+    enabled: enabledByDefault,
     artMode: ART_MODES.STANDARD,
     a: { label: t("ATF.config.defaultLabelA"), src: actor.prototypeToken?.texture?.src ?? actor.img ?? "" },
     b: { label: t("ATF.config.defaultLabelB"), src: "" },
+  };
+}
+
+/** Build the template context for a single actor's card. */
+function buildActorCard(actor, cfg, artModes, { enabledByDefault = false } = {}) {
+  const stored = cfg.actors?.[actor.id];
+  const ac = stored ?? defaultActorConfig(actor, { enabledByDefault });
+  const artMode = ac.artMode ?? ART_MODES.STANDARD;
+  return {
+    id: actor.id,
+    name: actor.name,
+    img: actor.img,
+    enabled: !!ac.enabled,
+    artMode,
+    a: { label: ac.a?.label ?? "", src: ac.a?.src ?? "" },
+    b: { label: ac.b?.label ?? "", src: ac.b?.src ?? "" },
+    artModes: artModes.map((m) => ({ ...m, selected: m.value === artMode })),
   };
 }
 
@@ -53,6 +70,26 @@ export class AtfConfigApp extends HandlebarsApplicationMixin(ApplicationV2) {
     form: { template: `modules/${MODULE_ID}/templates/config.hbs`, scrollable: [".atf-actors"] },
   };
 
+  /**
+   * Open the config scoped to a single actor (from the Token HUD edit button).
+   * Bypasses the player-owned filter so the GM can configure any actor. Reuses an
+   * already-open window for the same actor instead of stacking duplicates.
+   * @param {string} actorId
+   */
+  static openForActor(actorId) {
+    const actor = game.actors.get(actorId);
+    if (!actor) return null;
+    const id = `atf-config-${actorId}`;
+    const existing = foundry.applications.instances?.get(id);
+    if (existing) return existing.render({ force: true });
+    const app = new AtfConfigApp({
+      id,
+      scopedActorId: actorId,
+      window: { title: game.i18n.format("ATF.config.scopedTitle", { name: actor.name }) },
+    });
+    return app.render({ force: true });
+  }
+
   async _prepareContext() {
     const cfg = getConfig();
     const artModes = [
@@ -60,24 +97,18 @@ export class AtfConfigApp extends HandlebarsApplicationMixin(ApplicationV2) {
       { value: ART_MODES.RING, label: t("ATF.artMode.ring") },
     ];
 
-    const actors = eligibleActors()
-      .map((actor) => {
-        const stored = cfg.actors?.[actor.id];
-        const ac = stored ?? defaultActorConfig(actor);
-        return {
-          id: actor.id,
-          name: actor.name,
-          img: actor.img,
-          enabled: !!ac.enabled,
-          artMode: ac.artMode ?? ART_MODES.STANDARD,
-          a: { label: ac.a?.label ?? "", src: ac.a?.src ?? "" },
-          b: { label: ac.b?.label ?? "", src: ac.b?.src ?? "" },
-          artModes: artModes.map((m) => ({ ...m, selected: m.value === (ac.artMode ?? ART_MODES.STANDARD) })),
-        };
-      })
-      .sort((x, y) => x.name.localeCompare(y.name));
+    const scopedId = this.options.scopedActorId;
+    let actors;
+    if (scopedId) {
+      const actor = game.actors.get(scopedId);
+      actors = actor ? [buildActorCard(actor, cfg, artModes, { enabledByDefault: true })] : [];
+    } else {
+      actors = eligibleActors()
+        .map((actor) => buildActorCard(actor, cfg, artModes))
+        .sort((x, y) => x.name.localeCompare(y.name));
+    }
 
-    return { actors, hasActors: actors.length > 0 };
+    return { actors, hasActors: actors.length > 0, scoped: !!scopedId };
   }
 
   // --- form fields -> config -------------------------------------------------

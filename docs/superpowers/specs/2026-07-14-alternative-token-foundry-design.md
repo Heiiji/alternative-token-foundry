@@ -271,3 +271,24 @@ semantics needed defining. Changed behavior:
   GM). The GM resolves the token via uuid and picks the per-token or character-level path.
 - **Security unchanged:** still path-free (`"a"`/`"b"` + uuid), still validated for ownership
   of the base actor on the authoritative GM.
+
+---
+
+## 14. Amendment (v0.0.3): per-token edit modal
+
+Day-to-day, configuring from a global list is slower than working from the tokens already on
+the table. Added a **second, GM-only entry point** to the *same* per-actor config store — no
+new storage model, no new security surface.
+
+- **GM edit button** in the Token HUD (`fa-pen-to-square`), shown whenever the token has a
+  world actor **regardless of config state** (so a fresh token can be set up). Players never
+  see it. The player *switch* button keeps its stricter rule.
+- **Reused config app, scoped:** `AtfConfigApp.openForActor(actorId)` renders the existing
+  per-actor card for one actor, bypassing the player-owned filter (GM may configure NPCs).
+  Unique window id per actor; the global screen remains for bulk editing. Save only writes the
+  submitted actor id, so other actors are untouched.
+- **Friction removed:** a fresh scoped config defaults `enabled:true` and pre-fills labels, so
+  the flow is pick A → pick B → Save → switch button appears.
+- **Scope decision:** images belong to the **actor** (confirmed with user), consistent with
+  "two images per character". Per-token *current variant* is still independent for unlinked
+  tokens; only the available pair is shared.

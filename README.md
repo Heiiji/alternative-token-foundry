@@ -24,11 +24,15 @@ Then enable **Alternative Token Foundry** in your world.
 
 ## GM setup
 
-1. **Game Settings → Configure Settings → Alternative Token Images** (GM only).
-2. For each player-owned character, set **Image A** and **Image B** (with the File Picker),
-   give each a label (e.g. *Normal* / *Armored*), pick the **art mode**, and tick **Enabled**.
-3. *Use current as A* prefills slot A from the token's current art; *Apply now* pushes an
-   appearance to the character immediately. **Save changes** when done.
+**Fastest (from the table):** right-click a token → click the **pen** button (GM-only) in the
+Token HUD. A modal opens **scoped to that token's character**: pick **Image A** and **Image B**,
+**Save**. It defaults to enabled with prefilled labels, so the player switch button appears
+immediately.
+
+**Bulk:** **Game Settings → Configure Settings → Alternative Token Images** (GM only) lists all
+player-owned characters at once. For each, set the two images (with the File Picker), labels,
+**art mode**, and **Enabled**. *Use current as A* prefills slot A from the current art; *Apply
+now* pushes an appearance immediately; **Save changes** when done.
 
 Both images are required, must differ, and both need a label before saving.
 

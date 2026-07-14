@@ -6,11 +6,13 @@
   "ATF.hud.switchTo": "Passer en {label}",
   "ATF.hud.outOfSync": "L'image actuelle ne correspond à aucune forme — cliquez pour choisir",
   "ATF.hud.noGM": "Aucun Maître de Jeu connecté — basculement indisponible",
+  "ATF.hud.editImages": "Configurer les images du jeton (MJ)",
 
   "ATF.artMode.standard": "Jeton standard",
   "ATF.artMode.ring": "Sujet d'anneau dynamique",
 
   "ATF.config.hint": "Configurez deux images de jeton approuvées par personnage. Seuls les joueurs propriétaires du personnage peuvent basculer, et uniquement entre les images définies ici.",
+  "ATF.config.scopedTitle": "Images du jeton : {name}",
   "ATF.config.enabled": "Activé",
   "ATF.config.imageA": "Image A",
   "ATF.config.imageB": "Image B",

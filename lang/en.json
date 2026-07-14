@@ -6,11 +6,13 @@
   "ATF.hud.switchTo": "Switch to {label}",
   "ATF.hud.outOfSync": "Current art matches neither form — click to choose",
   "ATF.hud.noGM": "No Game Master online — switching unavailable",
+  "ATF.hud.editImages": "Configure token images (GM)",
 
   "ATF.artMode.standard": "Standard token",
   "ATF.artMode.ring": "Dynamic ring subject",
 
   "ATF.config.hint": "Configure two approved token images per character. Only players who own the character can switch, and only between the images you set here.",
+  "ATF.config.scopedTitle": "Token images: {name}",
   "ATF.config.enabled": "Enabled",
   "ATF.config.imageA": "Image A",
   "ATF.config.imageB": "Image B",
