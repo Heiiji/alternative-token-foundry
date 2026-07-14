@@ -1,5 +1,9 @@
 # Alternative Token Foundry
 
+[![Release](https://img.shields.io/github/v/release/Heiiji/alternative-token-foundry?sort=semver)](https://github.com/Heiiji/alternative-token-foundry/releases)
+[![Foundry](https://img.shields.io/badge/Foundry-v13%E2%80%93v14-informational)](https://foundryvtt.com)
+[![License: MIT](https://img.shields.io/github/license/Heiiji/alternative-token-foundry)](LICENSE)
+
 A small, system-agnostic **Foundry VTT** module (V13+, verified on **V14**) that lets
 **players** switch their character token between **two GM-approved appearances** — for
 example *Normal* and *Armored* — with a single click in the Token HUD.
@@ -57,7 +61,7 @@ Approved images live in a **GM-only world setting**. A player click writes a tin
 with a server-verified user id; the GM validates ownership and applies the GM-approved image
 to all linked tokens + the prototype, with best-effort rollback on failure. Multiple
 connected GMs elect a single authority, and rapid clicks are serialized per actor. No socket,
-no dependencies. Full design in [`docs/superpowers/specs`](docs/superpowers/specs/).
+no dependencies. Full design in [`docs/DESIGN.md`](docs/DESIGN.md).
 
 ## Public API
 

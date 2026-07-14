@@ -3,7 +3,7 @@
  *
  * Lets players switch their linked character token between two GM-approved
  * appearances with one click, keeping every linked token and the prototype token
- * in sync. See docs/superpowers/specs for the full design.
+ * in sync. See docs/DESIGN.md for the full design.
  */
 
 import { FLAGS, INTERNAL_OPTION, MODULE_ID, log } from "./constants.mjs";

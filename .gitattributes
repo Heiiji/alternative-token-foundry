@@ -1,0 +1,11 @@
+# Normalize line endings to LF across platforms.
+* text=auto eol=lf
+
+# Treat binary assets as binary.
+*.png binary
+*.webp binary
+*.jpg binary
+*.jpeg binary
+
+# Collapse the dev lockfile in diffs and exclude it from language stats.
+package-lock.json linguist-generated=true
