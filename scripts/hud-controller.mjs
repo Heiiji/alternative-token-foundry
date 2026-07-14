@@ -22,7 +22,7 @@ export function onRenderTokenHUD(hud, element) {
   const token = hud?.object;
   const actor = token?.actor;
   const tokenDoc = token?.document;
-  if (!actor || !tokenDoc?.isLinked) return;
+  if (!actor || !tokenDoc) return;
 
   if (!actor.testUserPermission(game.user, CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER)) return;
 
@@ -30,7 +30,11 @@ export function onRenderTokenHUD(hud, element) {
   if (!config?.enabled || !config.a?.src || !config.b?.src) return;
 
   const field = activeField(config.artMode);
-  const activeSrc = foundry.utils.getProperty(actor.prototypeToken, field);
+  // Source of truth: the prototype for linked tokens (character-level), the token
+  // itself for unlinked tokens (each unlinked token is independent).
+  const activeSrc = tokenDoc.isLinked
+    ? foundry.utils.getProperty(actor.prototypeToken, field)
+    : foundry.utils.getProperty(tokenDoc, field);
   const active = resolveActiveSlot(activeSrc, config);
   const target = active ? otherSlot(active) : null;
 
@@ -51,7 +55,7 @@ export function onRenderTokenHUD(hud, element) {
       slot = await promptSlotChoice(config);
       if (!slot) return;
     }
-    await doSwitch(actor, slot, button);
+    await doSwitch(actor, slot, button, tokenDoc.uuid);
   });
 }
 
@@ -81,14 +85,14 @@ function buildButton(config, active, target) {
   return button;
 }
 
-async function doSwitch(actor, slot, button) {
+async function doSwitch(actor, slot, button, tokenUuid) {
   const icon = button.querySelector("i");
   const prevIcon = icon?.className;
   button.classList.add("atf-processing");
   if (icon) icon.className = "fa-solid fa-spinner fa-spin fa-fw";
 
   try {
-    const result = await requestAppearanceChange(actor, slot);
+    const result = await requestAppearanceChange(actor, slot, tokenUuid);
     // GM fast-path returns a result directly; relayed requests notify via flag.
     if (result && !result.success) {
       ui.notifications?.warn(t(result.message ?? "ATF.errors.switchFailed"));

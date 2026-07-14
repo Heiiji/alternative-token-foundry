@@ -248,3 +248,26 @@ vitest with plain objects. Foundry-integrated modules get a manual QA checklist 
 
 Pure-logic units (1,4,5,6,7,10,11,12,13,14 decision paths, 17) are covered by vitest;
 the rest are manual QA in a live world.
+
+---
+
+## 13. Amendment (v0.0.2): unlinked token support
+
+Live testing (Knight system) surfaced that player tokens are frequently **unlinked**, and the
+v0.0.1 MVP hid the button on those tokens (acceptance criterion #4). The synthetic actor of an
+unlinked token keeps the base actor id, so config resolution already works — only the switch
+semantics needed defining. Changed behavior:
+
+- **Eligibility:** the button now shows on unlinked tokens too (owner + enabled config + both
+  images still required). Criterion #4 is superseded.
+- **Switch semantics by link state:**
+  - *Linked* token → character-level (all linked tokens + prototype), unchanged.
+  - *Unlinked* token → **that token only** (`switchSingleToken`), because each unlinked token
+    is independent. The prototype and sibling tokens are left untouched.
+- **Active slot source of truth:** linked tokens resolve from the prototype; unlinked tokens
+  resolve from the clicked token's own current image.
+- **Request channel:** the request now carries `tokenUuid`; the flag is always written to the
+  **base world actor** (a synthetic token actor's flags would not fire `updateActor` on the
+  GM). The GM resolves the token via uuid and picks the per-token or character-level path.
+- **Security unchanged:** still path-free (`"a"`/`"b"` + uuid), still validated for ownership
+  of the base actor on the authoritative GM.

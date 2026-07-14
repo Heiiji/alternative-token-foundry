@@ -13,8 +13,19 @@
 import { FLAGS, MODULE_ID, REQUEST_TTL_MS, t, warn, error } from "./constants.mjs";
 import { getActorConfig } from "./config-repository.mjs";
 import { validateSwitchRequest } from "./validation.mjs";
-import { synchronizeAppearance } from "./sync-service.mjs";
+import { switchSingleToken, synchronizeAppearance } from "./sync-service.mjs";
 import { isPrimaryActiveGM } from "./authority.mjs";
+
+/** Resolve a document by uuid across V13/V14 namespacing. */
+async function resolveUuid(uuid) {
+  if (!uuid) return null;
+  const fn = globalThis.fromUuid ?? foundry.utils?.fromUuid;
+  try {
+    return fn ? await fn(uuid) : null;
+  } catch {
+    return null;
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Per-actor serialization
@@ -54,22 +65,28 @@ function markProcessed(id) {
 /**
  * Request that `actor` switch to `target`. Resolves to a result object when we
  * processed it locally (GM fast-path), or `undefined` when it was relayed.
- * @param {Actor} actor
+ * @param {Actor}   actor       may be a synthetic (unlinked) token actor
  * @param {"a"|"b"} target
+ * @param {string}  [tokenUuid] the specific token clicked (drives per-token switch for unlinked)
  */
-export async function requestAppearanceChange(actor, target) {
+export async function requestAppearanceChange(actor, target, tokenUuid) {
+  // Always operate against the base world actor: the request flag must live on it
+  // (a synthetic token actor's flags would not fire `updateActor` on the GM).
+  const worldActor = game.actors.get(actor.id) ?? actor;
+
   const request = {
     id: foundry.utils.randomID(),
     target,
+    tokenUuid: tokenUuid ?? null,
     requestedAt: Date.now(),
     requesterId: game.user.id, // used only for post-handover recovery; re-checked for ownership
   };
 
   if (isPrimaryActiveGM()) {
-    return enqueue(actor.id, () => processRequest(actor, request, game.user.id, { viaRelay: false }));
+    return enqueue(worldActor.id, () => processRequest(worldActor, request, game.user.id, { viaRelay: false }));
   }
 
-  await actor.setFlag(MODULE_ID, FLAGS.REQUEST, request);
+  await worldActor.setFlag(MODULE_ID, FLAGS.REQUEST, request);
   return undefined;
 }
 
@@ -132,7 +149,14 @@ async function processRequest(actor, request, userId, { viaRelay }) {
     result = makeResult(request, userId, false, check.error);
   } else {
     try {
-      await synchronizeAppearance(actor, config, target);
+      const token = await resolveUuid(request.tokenUuid);
+      if (token && token.isLinked === false) {
+        // Unlinked token: switch just this placed token (per-token semantics).
+        await switchSingleToken(token, config, target);
+      } else {
+        // Linked token (or no token context): character-level sync.
+        await synchronizeAppearance(actor, config, target);
+      }
       result = makeResult(request, userId, true);
     } catch (err) {
       error("sync failed", err);

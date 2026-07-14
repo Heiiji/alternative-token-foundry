@@ -72,6 +72,30 @@ async function rollbackAppearance(actor, snapshot, artMode) {
 }
 
 /**
+ * Switch a single (unlinked) placed token to the given slot. Each unlinked token
+ * is independent, so only this token document changes — not the prototype or any
+ * sibling tokens. Best-effort rollback on failure.
+ * @param {TokenDocument} tokenDoc
+ * @param {object} config
+ * @param {"a"|"b"} slot
+ */
+export async function switchSingleToken(tokenDoc, config, slot) {
+  const field = activeField(config.artMode);
+  const src = config[slot]?.src;
+  if (!src) throw new Error(`target slot "${slot}" has no image`);
+
+  const previous = foundry.utils.getProperty(tokenDoc, field);
+  try {
+    await tokenDoc.update({ [field]: src }, { [INTERNAL_OPTION]: true });
+  } catch (err) {
+    if (previous != null) {
+      await tokenDoc.update({ [field]: previous }, { [INTERNAL_OPTION]: true }).catch(() => {});
+    }
+    throw err;
+  }
+}
+
+/**
  * Bring a freshly-created linked token in line with the actor's active slot.
  * Called on the authoritative GM from the `createToken` hook. The prototype update
  * normally covers future tokens; this is belt-and-braces reconciliation.

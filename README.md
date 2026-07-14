@@ -4,10 +4,11 @@ A small, system-agnostic **Foundry VTT** module (V13+, verified on **V14**) that
 **players** switch their character token between **two GM-approved appearances** — for
 example *Normal* and *Armored* — with a single click in the Token HUD.
 
-The appearance belongs to the **character**, so switching updates every linked token
-(across all scenes) and the actor's prototype token together, and the choice survives
-reloads. The GM keeps full control: players can only ever switch **between the two images
-the GM configured** — they can never point a token at an arbitrary file.
+Switching a **linked** token updates every linked token (across all scenes) and the actor's
+prototype token together, so the appearance belongs to the character and survives reloads.
+Switching an **unlinked** token changes just that placed token, since each unlinked token is
+independent. The GM keeps full control either way: players can only ever switch **between the
+two images the GM configured** — they can never point a token at an arbitrary file.
 
 ---
 
@@ -35,7 +36,8 @@ Both images are required, must differ, and both need a label before saving.
 
 Right-click your token to open the Token HUD and click the **masks** button. Your token
 switches to the other appearance immediately; the tooltip tells you which form you'll get
-("Switch to Armored"). Only owners of a configured, linked character see the button.
+("Switch to Armored"). Only owners of a configured character see the button. Works on both
+linked tokens (updates the whole character) and unlinked tokens (updates that token only).
 
 ## Art modes
 
