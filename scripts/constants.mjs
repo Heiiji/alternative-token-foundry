@@ -11,6 +11,7 @@ export const MODULE_ID = "alternative-token-foundry";
 /** World-setting keys. */
 export const SETTINGS = {
   CONFIG: "actorConfigurations",
+  TRANSITION: "appearanceTransition",
 };
 
 /** Actor flag keys (namespaced under `flags[MODULE_ID]`). */

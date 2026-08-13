@@ -30,9 +30,9 @@ scenes) and the Actor's **prototype token** update together and the choice survi
 - Installable release (manifest + download URL, CI-built zip).
 
 ### Explicitly out of scope (MVP)
-More than two forms; per-scene differences; unlinked-token state; animated transitions;
-portrait switching; automation from conditions/HP/items; character-sheet integration;
-keyboard shortcuts; compendium-actor configuration.
+More than two forms; per-scene differences; unlinked-token state; animated transitions
+(added later, §15); portrait switching; automation from conditions/HP/items;
+character-sheet integration; keyboard shortcuts; compendium-actor configuration.
 
 ---
 
@@ -128,6 +128,8 @@ catch:
 
 Only the image field changes — scale, dimensions, vision, tint, bars, disposition, ring
 colors, and all system data are untouched. The Actor **portrait** is never changed.
+Placed-token writes include `animation: { transition }` from the world setting (§15);
+the prototype update does not.
 
 `createToken` reconciles: a freshly dropped linked token whose art doesn't match the active
 slot is brought into line.
@@ -196,6 +198,7 @@ alternative-token-foundry/
 │   ├── authority.mjs    (pure)    # electPrimaryGM
 │   ├── validation.mjs   (pure)    # validateActorConfig, validateSwitchRequest
 │   ├── sync-plan.mjs    (pure)    # buildTokenUpdate/PrototypeUpdate, planSceneUpdates, planRollback
+│   ├── animation.mjs    (pure)    # TokenAnimationTransition list, options bag
 │   ├── settings.mjs               # register setting + GM menu
 │   ├── config-repository.mjs      # read/write config, per-actor lookup
 │   ├── config-app.mjs             # ApplicationV2 config screen
@@ -292,3 +295,19 @@ new storage model, no new security surface.
 - **Scope decision:** images belong to the **actor** (confirmed with user), consistent with
   "two images per character". Per-token *current variant* is still independent for unlinked
   tokens; only the available pair is shared.
+
+---
+
+## 15. Amendment (v0.0.4): appearance transition
+
+Token image switches now pass Foundry's native `options.animation.transition` on placed-token
+writes. The GM picks the effect from a world setting (`appearanceTransition`, `config: true`,
+default `"fade"`) whose choices are the V13/V14 `TokenAnimationTransition` set. The request
+flag stays path-free; the transition is not player-controlled.
+
+- **Animated:** `synchronizeAppearance` scene token updates and `switchSingleToken` success.
+- **Not animated:** prototype `Actor#update` (not a canvas mesh); rollback; `createToken`
+  reconciliation (correction, not a player switch).
+- **Broadcast:** `animation` rides on the same document operation as `atfInternal`, so every
+  client that currently has the token drawn plays `TextureTransitionFilter`.
+

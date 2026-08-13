@@ -6,6 +6,13 @@ All notable changes to this project are documented here. The format is loosely b
 
 ## [Unreleased]
 
+## [0.0.4] — 2026-08-12
+
+### Added
+- GM world setting **Appearance transition**: choose the Foundry texture-transition
+  effect used when a token switches images (default **Fade**). Rollback and newly
+  placed token reconciliation stay instant so they do not replay the effect.
+
 ### Changed
 - Repository hygiene for open source: relocated the design doc to `docs/DESIGN.md`, added
   this changelog, README badges, `.gitattributes`, and `license` / `readme` / `bugs` /
@@ -37,7 +44,8 @@ All notable changes to this project are documented here. The format is loosely b
   multi-GM authority election, per-actor request queue, best-effort rollback, standard and
   Dynamic Token Ring art modes, `createToken` reconciliation, and EN + FR localization.
 
-[Unreleased]: https://github.com/Heiiji/alternative-token-foundry/compare/v0.0.3...HEAD
+[Unreleased]: https://github.com/Heiiji/alternative-token-foundry/compare/v0.0.4...HEAD
+[0.0.4]: https://github.com/Heiiji/alternative-token-foundry/releases/tag/v0.0.4
 [0.0.3]: https://github.com/Heiiji/alternative-token-foundry/releases/tag/v0.0.3
 [0.0.2]: https://github.com/Heiiji/alternative-token-foundry/releases/tag/v0.0.2
 [0.0.1]: https://github.com/Heiiji/alternative-token-foundry/releases/tag/v0.0.1

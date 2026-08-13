@@ -5,6 +5,7 @@
  * exactly as they are, and the Actor sheet portrait is never changed.
  */
 
+import { appearanceUpdateOptions } from "./animation.mjs";
 import { INTERNAL_OPTION, error } from "./constants.mjs";
 import { getActorConfig } from "./config-repository.mjs";
 import { activeField, resolveActiveSlot } from "./slots.mjs";
@@ -45,7 +46,7 @@ export async function synchronizeAppearance(actor, config, slot) {
     for (const [sceneId, updates] of sceneUpdates) {
       const scene = game.scenes.get(sceneId);
       if (scene && updates.length) {
-        await scene.updateEmbeddedDocuments("Token", updates, { [INTERNAL_OPTION]: true });
+        await scene.updateEmbeddedDocuments("Token", updates, appearanceUpdateOptions());
       }
     }
     await actor.update(buildPrototypeUpdate(artMode, src), { [INTERNAL_OPTION]: true });
@@ -60,7 +61,7 @@ async function rollbackAppearance(actor, snapshot, artMode) {
     for (const [sceneId, updates] of planRollback(snapshot.tokens, artMode)) {
       const scene = game.scenes.get(sceneId);
       if (scene && updates.length) {
-        await scene.updateEmbeddedDocuments("Token", updates, { [INTERNAL_OPTION]: true });
+        await scene.updateEmbeddedDocuments("Token", updates, appearanceUpdateOptions({ animate: false }));
       }
     }
     if (snapshot.prototypeSrc != null) {
@@ -86,10 +87,10 @@ export async function switchSingleToken(tokenDoc, config, slot) {
 
   const previous = foundry.utils.getProperty(tokenDoc, field);
   try {
-    await tokenDoc.update({ [field]: src }, { [INTERNAL_OPTION]: true });
+    await tokenDoc.update({ [field]: src }, appearanceUpdateOptions());
   } catch (err) {
     if (previous != null) {
-      await tokenDoc.update({ [field]: previous }, { [INTERNAL_OPTION]: true }).catch(() => {});
+      await tokenDoc.update({ [field]: previous }, appearanceUpdateOptions({ animate: false })).catch(() => {});
     }
     throw err;
   }
@@ -117,5 +118,5 @@ export async function reconcileToken(tokenDoc) {
   const current = foundry.utils.getProperty(tokenDoc, field);
   if (samePath(current, desired)) return;
 
-  await tokenDoc.update({ [field]: desired }, { [INTERNAL_OPTION]: true });
+  await tokenDoc.update({ [field]: desired }, appearanceUpdateOptions({ animate: false }));
 }

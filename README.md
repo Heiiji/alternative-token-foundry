@@ -40,6 +40,10 @@ now* pushes an appearance immediately; **Save changes** when done.
 
 Both images are required, must differ, and both need a label before saving.
 
+**Transition:** in **Configure Settings → Alternative Token Foundry**, pick the visual
+effect used when a token switches (default **Fade**). The list is Foundry's built-in
+texture transitions (swirl, hologram, morph, and the rest).
+
 ## Player use
 
 Right-click your token to open the Token HUD and click the **masks** button. Your token
@@ -74,7 +78,7 @@ await api.requestAppearanceChange(actor, "b"); // request slot B for an owned ac
 
 ```bash
 npm install
-npm test        # vitest — covers the pure logic (paths, slots, validation, election, sync plan)
+npm test        # vitest — covers the pure logic (paths, slots, validation, election, sync plan, transitions)
 ```
 
 Release: push a tag `vX.Y.Z`; GitHub Actions builds `module.zip`, stamps `module.json`, and
@@ -92,7 +96,8 @@ choix persiste après un rechargement. Les joueurs ne peuvent basculer qu'entre 
 images définies par le MJ**, jamais vers un fichier arbitraire.
 
 - **Installation** : Modules → Installer un module, coller l'URL de manifeste ci-dessus.
-- **MJ** : *Configurer les paramètres → Images de jeton alternatives* (réservé au MJ).
+- **MJ** : *Configurer les paramètres → Images de jeton alternatives* (réservé au MJ). Sous
+  *Alternative Token Foundry*, choisir la **transition d'apparence** (fondu par défaut).
 - **Joueur** : clic droit sur le jeton → bouton masques du HUD.
 
 ## License
