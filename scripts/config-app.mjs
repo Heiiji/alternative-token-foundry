@@ -6,12 +6,13 @@
  * deprecated). Registered GM-only via settings.registerMenu({ restricted:true }).
  */
 
-import { ART_MODES, MODULE_ID, t, error } from "./constants.mjs";
-import { getConfig, removeActorConfig, setActorConfig, setConfig } from "./config-repository.mjs";
+import { ART_MODES, MODULE_ID, t, error, withErrorDetail } from "./constants.mjs";
+import { getActorConfig, getConfig, removeActorConfig, setActorConfig, setConfig } from "./config-repository.mjs";
 import { validateActorConfig } from "./validation.mjs";
 import { cacheBustPath, normalizePath, samePath } from "./paths.mjs";
 import { currentArtSrc, inferArtMode, resolveActiveSlot } from "./slots.mjs";
 import { synchronizeAppearance } from "./sync-service.mjs";
+import { enqueue } from "./request-service.mjs";
 import { isTokenizerAvailable, launchSlotTokenizer, shouldSyncAfterTokenize } from "./tokenizer-bridge.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -125,8 +126,14 @@ export class AtfConfigApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
   // --- form fields -> config -------------------------------------------------
 
+  /** Whether this window still has a live DOM to read form values from. */
+  #hasLiveForm() {
+    return !!this.element?.isConnected;
+  }
+
   #readRow(actorId) {
-    const q = (suffix) => this.element.querySelector(`[name="actors.${actorId}.${suffix}"]`);
+    const root = this.element;
+    const q = (suffix) => root?.querySelector(`[name="actors.${actorId}.${suffix}"]`);
     return {
       enabled: !!q("enabled")?.checked,
       artMode: q("artMode")?.value ?? ART_MODES.STANDARD,
@@ -136,8 +143,8 @@ export class AtfConfigApp extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   #writeSlotSrc(actorId, slot, src) {
-    const input = this.element.querySelector(`[name="actors.${actorId}.${slot}.src"]`);
-    const preview = this.element.querySelector(`[data-preview="${actorId}.${slot}"]`);
+    const input = this.element?.querySelector(`[name="actors.${actorId}.${slot}.src"]`);
+    const preview = this.element?.querySelector(`[data-preview="${actorId}.${slot}"]`);
     if (input) input.value = src;
     if (preview) preview.src = src;
   }
@@ -206,20 +213,27 @@ export class AtfConfigApp extends HandlebarsApplicationMixin(ApplicationV2) {
   static async #onApplySlot(_event, target) {
     const { actorId, slot } = target.dataset;
     const actor = game.actors.get(actorId);
-    if (!actor) return;
+    if (!actor || target.disabled) return;
 
     const row = normalizeRow(this.#readRow(actorId));
     if (!row[slot]?.src) {
       ui.notifications?.warn(t("ATF.errors.noImage"));
       return;
     }
+    target.disabled = true;
     try {
-      await setActorConfig(actorId, row); // persist so state is consistent
-      await synchronizeAppearance(actor, row, slot);
+      // Same per-actor queue as HUD switches, so an apply can never interleave
+      // with a concurrent switch (or a second click) for this actor.
+      await enqueue(actorId, async () => {
+        await setActorConfig(actorId, row); // persist so state is consistent
+        await synchronizeAppearance(actor, row, slot);
+      });
       ui.notifications?.info(t("ATF.notify.applied", { label: row[slot].label || slot }));
     } catch (err) {
       error(err);
-      ui.notifications?.error(t("ATF.errors.syncFailed"));
+      ui.notifications?.error(withErrorDetail(t("ATF.errors.syncFailed"), err));
+    } finally {
+      target.disabled = false;
     }
   }
 
@@ -247,13 +261,18 @@ export class AtfConfigApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     const actor = game.actors.get(actorId);
-    const previousRow = normalizeRow(this.#readRow(actorId));
+    // The GM may have closed this window while Tokenizer stayed open. Fall back
+    // to the stored configuration instead of reading a dead form.
+    const liveForm = this.#hasLiveForm();
+    const previousRow = normalizeRow(liveForm ? this.#readRow(actorId) : (getActorConfig(actorId) ?? {}));
     const liveSrc = actor ? currentArtSrc(actor.prototypeToken, previousRow.artMode) : "";
     const activeBefore = resolveActiveSlot(liveSrc, previousRow);
     const outOfSync = activeBefore == null;
 
     this.#writeSlotSrc(actorId, slot, parsed.src);
-    const row = normalizeRow(this.#readRow(actorId));
+    const row = liveForm
+      ? normalizeRow(this.#readRow(actorId))
+      : normalizeRow({ ...previousRow, [slot]: { ...previousRow[slot], src: parsed.src } });
     if (samePath(row.a.src, row.b.src)) {
       this.#writeSlotSrc(actorId, slot, previousRow[slot]?.src ?? "");
       ui.notifications?.error(t("ATF.errors.imagesMustDiffer"));
@@ -264,7 +283,7 @@ export class AtfConfigApp extends HandlebarsApplicationMixin(ApplicationV2) {
       await setActorConfig(actorId, row);
     } catch (err) {
       error(err);
-      ui.notifications?.error(t("ATF.errors.syncFailed"));
+      ui.notifications?.error(withErrorDetail(t("ATF.errors.syncFailed"), err));
       return;
     }
 
@@ -274,11 +293,11 @@ export class AtfConfigApp extends HandlebarsApplicationMixin(ApplicationV2) {
         [slot]: { ...row[slot], src: cacheBustPath(row[slot].src) },
       };
       try {
-        await synchronizeAppearance(actor, syncConfig, slot);
+        await enqueue(actorId, () => synchronizeAppearance(actor, syncConfig, slot));
         ui.notifications?.info(t("ATF.notify.applied", { label: row[slot].label || slot }));
       } catch (err) {
         error(err);
-        ui.notifications?.error(t("ATF.errors.syncFailed"));
+        ui.notifications?.error(withErrorDetail(t("ATF.errors.syncFailed"), err));
       }
       return;
     }

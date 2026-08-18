@@ -24,7 +24,11 @@ export async function synchronizeAppearance(actor, config, slot) {
   const src = config[slot]?.src;
   if (!src) throw new Error(`${actor?.name}: target slot "${slot}" has no image`);
 
-  const tokenDocs = (actor.getDependentTokens({ linked: true }) ?? []).filter((td) => td?.parent?.id);
+  // Keep only tokens that still exist in their scene: a stale dependent-token
+  // entry (deleted token) would make the whole batch update reject.
+  const tokenDocs = (actor.getDependentTokens({ linked: true }) ?? []).filter(
+    (td) => td?.parent?.id && (td.parent.tokens?.has(td.id) ?? true),
+  );
 
   // Snapshot current values for rollback.
   const snapshot = {
@@ -84,6 +88,9 @@ export async function switchSingleToken(tokenDoc, config, slot) {
   const field = activeField(config.artMode);
   const src = config[slot]?.src;
   if (!src) throw new Error(`target slot "${slot}" has no image`);
+  if (tokenDoc?.parent && !(tokenDoc.parent.tokens?.has(tokenDoc.id) ?? true)) {
+    throw new Error(`token "${tokenDoc.name ?? tokenDoc.id}" no longer exists on its scene`);
+  }
 
   const previous = foundry.utils.getProperty(tokenDoc, field);
   try {

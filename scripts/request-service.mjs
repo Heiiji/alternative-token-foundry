@@ -41,7 +41,9 @@ const actorQueues = new Map();
 export function enqueue(actorId, taskFn) {
   const prev = actorQueues.get(actorId) ?? Promise.resolve();
   const run = prev.catch(() => {}).then(() => taskFn());
-  const tracked = run.finally(() => {
+  // The tracked chain swallows rejections (the caller handles `run`'s outcome);
+  // otherwise every failed task also fires an unhandled-rejection event.
+  const tracked = run.catch(() => {}).then(() => {
     if (actorQueues.get(actorId) === tracked) actorQueues.delete(actorId);
   });
   actorQueues.set(actorId, tracked);

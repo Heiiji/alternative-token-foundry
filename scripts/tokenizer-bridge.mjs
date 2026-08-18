@@ -7,7 +7,7 @@
  * time so they remain unit-testable.
  */
 
-import { SLOTS, t, error } from "./constants.mjs";
+import { SLOTS, t, error, withErrorDetail } from "./constants.mjs";
 import { normalizePath, samePath } from "./paths.mjs";
 
 export const TOKENIZER_MODULE_ID = "vtta-tokenizer";
@@ -185,12 +185,12 @@ export function launchSlotTokenizer({ actor, slot, seedSrc, otherSlotSrc, onResu
       if (result && typeof result.then === "function") {
         result.catch((err) => {
           error(err);
-          ui.notifications?.error(t("ATF.errors.syncFailed"));
+          ui.notifications?.error(withErrorDetail(t("ATF.errors.syncFailed"), err));
         });
       }
     } catch (err) {
       error(err);
-      ui.notifications?.error(t("ATF.errors.syncFailed"));
+      ui.notifications?.error(withErrorDetail(t("ATF.errors.syncFailed"), err));
     }
   });
   return true;

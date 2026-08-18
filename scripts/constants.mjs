@@ -50,6 +50,20 @@ export function t(key, data = {}) {
   return g?.i18n?.format ? g.i18n.format(full, data) : full;
 }
 
+/**
+ * Append the underlying error message to a localized notification, so a field
+ * report of "sync failed" carries the actual cause without opening the console.
+ * @param {string} message  localized user-facing message
+ * @param {unknown} err
+ */
+export function withErrorDetail(message, err) {
+  const detail = String(err?.message ?? err ?? "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 200);
+  return detail ? `${message} [${detail}]` : message;
+}
+
 export function log(...args) {
   console.log(`${MODULE_ID} |`, ...args);
 }

@@ -5,7 +5,7 @@
  *  - a *switch* button for owners, shown only when a config is enabled with both images.
  */
 
-import { t, error } from "./constants.mjs";
+import { t, error, withErrorDetail } from "./constants.mjs";
 import { getActorConfig, setActorConfig } from "./config-repository.mjs";
 import { getPrimaryActiveGMId } from "./authority.mjs";
 import { currentArtSrc, otherSlot, resolveActiveSlot } from "./slots.mjs";
@@ -57,20 +57,30 @@ export function onRenderTokenHUD(hud, element) {
   button.addEventListener("click", async (event) => {
     event.preventDefault();
     if (button.classList.contains("atf-disabled")) return;
+    if (button.classList.contains("atf-processing")) return;
 
-    let slot = target;
-    if (!active) {
+    // Recompute from live state: the HUD does not re-render on token art
+    // changes, so slot data captured at render time can be stale after a
+    // switch — acting on it would silently re-apply the showing slot.
+    const liveConfig = getActorConfig(actor.id);
+    if (!liveConfig?.enabled || !liveConfig.a?.src || !liveConfig.b?.src) return;
+    const liveSource = tokenDoc.isLinked ? actor.prototypeToken : tokenDoc;
+    const liveActive = resolveActiveSlot(currentArtSrc(liveSource, liveConfig.artMode), liveConfig);
+
+    let slot = liveActive ? otherSlot(liveActive) : null;
+    if (!liveActive) {
       if (game.user.isGM) {
-        slot = await promptAdoptSlot(config);
+        slot = await promptAdoptSlot(liveConfig);
         if (!slot) return;
-        const adopted = await adoptCurrentAppearance(actor, tokenDoc, config, slot);
+        const adopted = await adoptCurrentAppearance(actor, tokenDoc, liveConfig, slot);
         if (adopted) hud.render?.();
         return;
       }
-      slot = await promptSlotChoice(config);
+      slot = await promptSlotChoice(liveConfig);
       if (!slot) return;
     }
     await doSwitch(actor, slot, button, tokenDoc.uuid);
+    hud.render?.();
   });
 }
 
@@ -140,7 +150,7 @@ async function adoptCurrentAppearance(actor, tokenDoc, config, slot) {
     return true;
   } catch (err) {
     error(err);
-    ui.notifications?.error(t("ATF.errors.syncFailed"));
+    ui.notifications?.error(withErrorDetail(t("ATF.errors.syncFailed"), err));
     return false;
   }
 }
@@ -161,7 +171,7 @@ async function doSwitch(actor, slot, button, tokenUuid) {
     }
   } catch (err) {
     error(err);
-    ui.notifications?.error(t("ATF.errors.switchFailed"));
+    ui.notifications?.error(withErrorDetail(t("ATF.errors.switchFailed"), err));
   } finally {
     button.classList.remove("atf-processing");
     if (icon && prevIcon) icon.className = prevIcon;

@@ -354,3 +354,31 @@ intact; empty B → Cancel writes nothing; sheet Tokenizer → HUD warns → GM 
 player revert; Tokenizer inactive → no Tokenize button; ring-subject *Use current* + switch
 still use `ring.subject.texture`.
 
+
+---
+
+## 17. Amendment (v0.0.6): switch reliability
+
+Field testing showed switches "working once, then refusing". Root cause: the Token HUD is
+rendered once and Foundry does **not** re-render it when token art changes, so the switch
+button's render-time `active`/`target` closure went stale after the first successful switch
+— the second click silently re-applied the slot already showing (a diffless no-op that even
+reported success).
+
+Rules now in force:
+
+- **Click-time resolution.** The HUD button recomputes config, active slot and target from
+  live document state inside the click handler. Render-time values are display-only.
+- **HUD refresh.** After a switch (or adopt) the HUD re-renders; an `updateToken` hook also
+  re-renders an open HUD whenever that token's `texture`/`ring` changes (covers relayed
+  player switches, where the change lands from the GM's client).
+- **One queue for every writer.** Config-screen *Apply* and post-Tokenize syncs go through
+  the same per-actor `enqueue` as switch requests; the *Apply* button is disabled while its
+  own sync runs. No two appearance writes for one actor can interleave.
+- **Stale-token immunity.** `synchronizeAppearance` drops dependent tokens whose id is no
+  longer in their scene's collection; `switchSingleToken` fails fast with an explicit
+  message if its token was deleted. One ghost token cannot fail the batch.
+- **Dead-window immunity.** The Tokenizer callback reads the stored config when the config
+  window's DOM is gone (`element.isConnected`), instead of throwing mid-callback.
+- **Diagnosable failures.** Catch-path notifications append the underlying error message
+  (`withErrorDetail`), truncated to 200 chars, so reports identify the real cause.

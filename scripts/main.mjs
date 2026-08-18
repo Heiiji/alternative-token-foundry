@@ -53,6 +53,18 @@ Hooks.on("updateActor", (actor, changed, options, userId) => {
   if (result) notifyRequester(result);
 });
 
+Hooks.on("updateToken", (tokenDoc, changed) => {
+  // Foundry does not re-render an open Token HUD when a token's art changes,
+  // which would leave our switch button pointing at the now-showing slot.
+  if (!changed || (!("texture" in changed) && !("ring" in changed))) return;
+  try {
+    const hud = canvas?.tokens?.hud;
+    if (hud?.rendered && hud.object?.document?.uuid === tokenDoc.uuid) hud.render();
+  } catch (err) {
+    console.error(`${MODULE_ID} |`, err);
+  }
+});
+
 Hooks.on("createToken", (tokenDoc, options) => {
   if (options?.[INTERNAL_OPTION]) return;
   if (!isPrimaryActiveGM()) return;
