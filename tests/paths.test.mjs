@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizePath, samePath } from "../scripts/paths.mjs";
+import { cacheBustPath, normalizePath, samePath } from "../scripts/paths.mjs";
 
 describe("normalizePath", () => {
   it("returns empty string for non-strings / falsy", () => {
@@ -34,5 +34,16 @@ describe("samePath", () => {
     expect(samePath("a.webp", "b.webp")).toBe(false);
     expect(samePath("", "")).toBe(false);
     expect(samePath(undefined, "a.webp")).toBe(false);
+  });
+});
+
+describe("cacheBustPath", () => {
+  it("appends a query to the cleaned path", () => {
+    expect(cacheBustPath("tokens/a.webp?old", 1715000000)).toBe("tokens/a.webp?1715000000");
+  });
+
+  it("returns empty for missing src", () => {
+    expect(cacheBustPath("")).toBe("");
+    expect(cacheBustPath(undefined)).toBe("");
   });
 });

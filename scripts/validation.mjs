@@ -4,6 +4,7 @@
  */
 
 import { REQUEST_TTL_MS, SLOTS } from "./constants.mjs";
+import { samePath } from "./paths.mjs";
 
 /**
  * Validate a per-actor configuration for saving.
@@ -19,7 +20,7 @@ export function validateActorConfig(cfg) {
 
   if (!aSrc) errors.push("ATF.errors.imageARequired");
   if (!bSrc) errors.push("ATF.errors.imageBRequired");
-  if (aSrc && bSrc && aSrc === bSrc) errors.push("ATF.errors.imagesMustDiffer");
+  if (aSrc && bSrc && samePath(aSrc, bSrc)) errors.push("ATF.errors.imagesMustDiffer");
   if (!cfg.a?.label || !String(cfg.a.label).trim()) errors.push("ATF.errors.labelARequired");
   if (!cfg.b?.label || !String(cfg.b.label).trim()) errors.push("ATF.errors.labelBRequired");
 

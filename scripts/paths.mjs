@@ -44,3 +44,14 @@ export function samePath(a, b) {
   const nb = normalizePath(b);
   return na !== "" && na === nb;
 }
+
+/**
+ * Append a cache-busting query for document writes. Config stores the clean
+ * path; `samePath` / `normalizePath` still treat these as equal.
+ * @param {unknown} src
+ * @param {number} [now]
+ */
+export function cacheBustPath(src, now = Date.now()) {
+  const clean = normalizePath(src);
+  return clean ? `${clean}?${now}` : "";
+}

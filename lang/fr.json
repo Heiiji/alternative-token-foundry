@@ -21,6 +21,7 @@
 
   "ATF.hud.switchTo": "Passer en {label}",
   "ATF.hud.outOfSync": "L'image actuelle ne correspond à aucune forme — cliquez pour choisir",
+  "ATF.hud.outOfSyncGm": "L'image actuelle ne correspond à aucune forme — cliquez pour l'assigner",
   "ATF.hud.noGM": "Aucun Maître de Jeu connecté — basculement indisponible",
   "ATF.hud.editImages": "Configurer les images du jeton (MJ)",
 
@@ -28,6 +29,7 @@
   "ATF.artMode.ring": "Sujet d'anneau dynamique",
 
   "ATF.config.hint": "Configurez deux images de jeton approuvées par personnage. Seuls les joueurs propriétaires du personnage peuvent basculer, et uniquement entre les images définies ici.",
+  "ATF.config.hintTokenizer": "Tokenizer est actif. Tokenisez chaque apparence séparément pour que Normal et Armuré ne partagent pas le même fichier. Pour le sujet d'anneau dynamique, utilisez le préréglage Appliquer dynamique de Tokenizer (un cadre circulaire intégré se superpose aux anneaux Foundry).",
   "ATF.config.scopedTitle": "Images du jeton : {name}",
   "ATF.config.enabled": "Activé",
   "ATF.config.imageA": "Image A",
@@ -35,6 +37,9 @@
   "ATF.config.labelPlaceholder": "Libellé (ex. Normal)",
   "ATF.config.pathPlaceholder": "Chemin de l'image",
   "ATF.config.browse": "Parcourir…",
+  "ATF.config.tokenize": "Tokeniser…",
+  "ATF.config.tokenizeTooltip": "Ouvre Tokenizer pour cette apparence. Enregistre un jeton dans cet emplacement ; le portrait du personnage n'est pas modifié.",
+  "ATF.config.tokenizeTooltipEmpty": "Pas encore d'image — ajoutez ou collez l'art dans Tokenizer. Le portrait n'est pas modifié.",
   "ATF.config.apply": "Appliquer",
   "ATF.config.artModeLabel": "Type d'image :",
   "ATF.config.useCurrentAsA": "Utiliser l'actuelle comme A",
@@ -46,11 +51,17 @@
 
   "ATF.dialog.outOfSyncTitle": "Choisir une apparence",
   "ATF.dialog.outOfSyncContent": "L'image actuelle de ce jeton ne correspond à aucune apparence configurée. Laquelle appliquer ?",
+  "ATF.dialog.adoptTitle": "Assigner cette image",
+  "ATF.dialog.adoptContent": "Cette image n'est assignée à aucune apparence. Utilisez-la comme l'une des deux formes approuvées. Le jeton reste tel quel.",
+  "ATF.dialog.adoptAs": "Utiliser comme {label}",
 
   "ATF.notify.switched": "Apparence modifiée.",
   "ATF.notify.saved": "Configuration des images de jeton enregistrée.",
   "ATF.notify.applied": "Apparence appliquée : {label}.",
   "ATF.notify.removed": "Configuration supprimée.",
+  "ATF.notify.tokenizerNoop": "Tokenizer n'a pas produit de nouvelle image de jeton.",
+  "ATF.notify.tokenizerSavedHidden": "Jeton « {label} » enregistré. Il sera utilisé au prochain basculement.",
+  "ATF.notify.adopted": "Image actuelle assignée comme {label}.",
 
   "ATF.errors.noConfig": "Aucune configuration.",
   "ATF.errors.imageARequired": "L'image A est requise.",
@@ -64,5 +75,7 @@
   "ATF.errors.expired": "La demande de basculement a expiré. Veuillez réessayer.",
   "ATF.errors.noImage": "L'apparence sélectionnée n'a pas d'image.",
   "ATF.errors.syncFailed": "Impossible de changer d'apparence. L'image précédente a été restaurée.",
-  "ATF.errors.switchFailed": "Impossible de changer d'apparence."
+  "ATF.errors.switchFailed": "Impossible de changer d'apparence.",
+  "ATF.errors.tokenizerUnavailable": "Tokenizer n'est pas disponible.",
+  "ATF.errors.tokenizerOpen": "Tokenizer est déjà ouvert. Terminez ou fermez-le d'abord."
 }

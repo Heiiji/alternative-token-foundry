@@ -1,5 +1,8 @@
 <div class="atf-config-body">
   <p class="atf-hint">{{localize "ATF.config.hint"}}</p>
+  {{#if tokenizerAvailable}}
+  <p class="atf-hint">{{localize "ATF.config.hintTokenizer"}}</p>
+  {{/if}}
 
   {{#if hasActors}}
   <div class="atf-actors">
@@ -30,6 +33,13 @@
               <i class="fas fa-file-image"></i>
             </button>
           </div>
+          {{#if @root.tokenizerAvailable}}
+          <button type="button" class="atf-tokenize" data-action="tokenizeSlot"
+                  data-actor-id="{{actor.id}}" data-slot="a"
+                  data-tooltip="{{#if actor.a.src}}{{localize 'ATF.config.tokenizeTooltip'}}{{else}}{{localize 'ATF.config.tokenizeTooltipEmpty'}}{{/if}}">
+            <i class="far fa-user-circle"></i> {{localize "ATF.config.tokenize"}}
+          </button>
+          {{/if}}
           <button type="button" class="atf-apply" data-action="applySlot"
                   data-actor-id="{{actor.id}}" data-slot="a">{{localize "ATF.config.apply"}}</button>
         </div>
@@ -49,6 +59,13 @@
               <i class="fas fa-file-image"></i>
             </button>
           </div>
+          {{#if @root.tokenizerAvailable}}
+          <button type="button" class="atf-tokenize" data-action="tokenizeSlot"
+                  data-actor-id="{{actor.id}}" data-slot="b"
+                  data-tooltip="{{#if actor.b.src}}{{localize 'ATF.config.tokenizeTooltip'}}{{else}}{{localize 'ATF.config.tokenizeTooltipEmpty'}}{{/if}}">
+            <i class="far fa-user-circle"></i> {{localize "ATF.config.tokenize"}}
+          </button>
+          {{/if}}
           <button type="button" class="atf-apply" data-action="applySlot"
                   data-actor-id="{{actor.id}}" data-slot="b">{{localize "ATF.config.apply"}}</button>
         </div>

@@ -142,3 +142,6 @@
   width: auto;
   padding: 0 1rem;
 }
+.atf-config .atf-tokenize {
+  width: 100%;
+}

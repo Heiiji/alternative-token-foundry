@@ -9,7 +9,10 @@
 import { ART_MODES, MODULE_ID, t, error } from "./constants.mjs";
 import { getConfig, removeActorConfig, setActorConfig, setConfig } from "./config-repository.mjs";
 import { validateActorConfig } from "./validation.mjs";
+import { cacheBustPath, normalizePath, samePath } from "./paths.mjs";
+import { currentArtSrc, inferArtMode, resolveActiveSlot } from "./slots.mjs";
 import { synchronizeAppearance } from "./sync-service.mjs";
+import { isTokenizerAvailable, launchSlotTokenizer, shouldSyncAfterTokenize } from "./tokenizer-bridge.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -25,10 +28,12 @@ function eligibleActors() {
 
 /** Seed config for an actor never configured before: prefill A with its current art. */
 function defaultActorConfig(actor, { enabledByDefault = false } = {}) {
+  const artMode = inferArtMode(actor.prototypeToken);
+  const src = normalizePath(currentArtSrc(actor.prototypeToken, artMode) || actor.img || "");
   return {
     enabled: enabledByDefault,
-    artMode: ART_MODES.STANDARD,
-    a: { label: t("ATF.config.defaultLabelA"), src: actor.prototypeToken?.texture?.src ?? actor.img ?? "" },
+    artMode,
+    a: { label: t("ATF.config.defaultLabelA"), src },
     b: { label: t("ATF.config.defaultLabelB"), src: "" },
   };
 }
@@ -37,7 +42,7 @@ function defaultActorConfig(actor, { enabledByDefault = false } = {}) {
 function buildActorCard(actor, cfg, artModes, { enabledByDefault = false } = {}) {
   const stored = cfg.actors?.[actor.id];
   const ac = stored ?? defaultActorConfig(actor, { enabledByDefault });
-  const artMode = ac.artMode ?? ART_MODES.STANDARD;
+  const artMode = inferArtMode(actor.prototypeToken, ac.artMode);
   return {
     id: actor.id,
     name: actor.name,
@@ -62,6 +67,7 @@ export class AtfConfigApp extends HandlebarsApplicationMixin(ApplicationV2) {
       pickImage: AtfConfigApp.#onPickImage,
       useCurrent: AtfConfigApp.#onUseCurrent,
       applySlot: AtfConfigApp.#onApplySlot,
+      tokenizeSlot: AtfConfigApp.#onTokenizeSlot,
       removeActor: AtfConfigApp.#onRemoveActor,
     },
   };
@@ -108,7 +114,13 @@ export class AtfConfigApp extends HandlebarsApplicationMixin(ApplicationV2) {
         .sort((x, y) => x.name.localeCompare(y.name));
     }
 
-    return { actors, hasActors: actors.length > 0, scoped: !!scopedId };
+    const tokenizerAvailable = isTokenizerAvailable();
+    return {
+      actors,
+      hasActors: actors.length > 0,
+      scoped: !!scopedId,
+      tokenizerAvailable,
+    };
   }
 
   // --- form fields -> config -------------------------------------------------
@@ -121,6 +133,13 @@ export class AtfConfigApp extends HandlebarsApplicationMixin(ApplicationV2) {
       a: { label: q("a.label")?.value?.trim() ?? "", src: q("a.src")?.value?.trim() ?? "" },
       b: { label: q("b.label")?.value?.trim() ?? "", src: q("b.src")?.value?.trim() ?? "" },
     };
+  }
+
+  #writeSlotSrc(actorId, slot, src) {
+    const input = this.element.querySelector(`[name="actors.${actorId}.${slot}.src"]`);
+    const preview = this.element.querySelector(`[data-preview="${actorId}.${slot}"]`);
+    if (input) input.value = src;
+    if (preview) preview.src = src;
   }
 
   static async #onSubmit(_event, _form, formData) {
@@ -164,8 +183,9 @@ export class AtfConfigApp extends HandlebarsApplicationMixin(ApplicationV2) {
       type: "image",
       current: input?.value || "",
       callback: (path) => {
-        if (input) input.value = path;
-        if (preview) preview.src = path;
+        const src = normalizePath(path);
+        if (input) input.value = src;
+        if (preview) preview.src = src;
       },
     }).render(true);
   }
@@ -174,7 +194,9 @@ export class AtfConfigApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const { actorId } = target.dataset;
     const actor = game.actors.get(actorId);
     if (!actor) return;
-    const src = actor.prototypeToken?.texture?.src ?? actor.img ?? "";
+    const artMode =
+      this.element.querySelector(`[name="actors.${actorId}.artMode"]`)?.value ?? ART_MODES.STANDARD;
+    const src = normalizePath(currentArtSrc(actor.prototypeToken, artMode) || actor.img || "");
     const input = this.element.querySelector(`[name="actors.${actorId}.a.src"]`);
     const preview = this.element.querySelector(`[data-preview="${actorId}.a"]`);
     if (input) input.value = src;
@@ -201,6 +223,69 @@ export class AtfConfigApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   }
 
+  static async #onTokenizeSlot(_event, target) {
+    const { actorId, slot } = target.dataset;
+    const actor = game.actors.get(actorId);
+    if (!actor) return;
+
+    const row = this.#readRow(actorId);
+    const other = slot === "a" ? "b" : "a";
+    const seedSrc = row[slot]?.src || currentArtSrc(actor.prototypeToken, row.artMode) || "";
+    launchSlotTokenizer({
+      actor,
+      slot,
+      seedSrc,
+      otherSlotSrc: row[other]?.src ?? "",
+      onResult: (parsed) => this.#applyTokenizerResult(actorId, slot, parsed),
+    });
+  }
+
+  async #applyTokenizerResult(actorId, slot, parsed) {
+    if (!parsed?.ok) {
+      ui.notifications?.warn(t(parsed?.reason ?? "ATF.notify.tokenizerNoop"));
+      return;
+    }
+
+    const actor = game.actors.get(actorId);
+    const previousRow = normalizeRow(this.#readRow(actorId));
+    const liveSrc = actor ? currentArtSrc(actor.prototypeToken, previousRow.artMode) : "";
+    const activeBefore = resolveActiveSlot(liveSrc, previousRow);
+    const outOfSync = activeBefore == null;
+
+    this.#writeSlotSrc(actorId, slot, parsed.src);
+    const row = normalizeRow(this.#readRow(actorId));
+    if (samePath(row.a.src, row.b.src)) {
+      this.#writeSlotSrc(actorId, slot, previousRow[slot]?.src ?? "");
+      ui.notifications?.error(t("ATF.errors.imagesMustDiffer"));
+      return;
+    }
+
+    try {
+      await setActorConfig(actorId, row);
+    } catch (err) {
+      error(err);
+      ui.notifications?.error(t("ATF.errors.syncFailed"));
+      return;
+    }
+
+    if (shouldSyncAfterTokenize(activeBefore, slot, outOfSync) && actor) {
+      const syncConfig = {
+        ...row,
+        [slot]: { ...row[slot], src: cacheBustPath(row[slot].src) },
+      };
+      try {
+        await synchronizeAppearance(actor, syncConfig, slot);
+        ui.notifications?.info(t("ATF.notify.applied", { label: row[slot].label || slot }));
+      } catch (err) {
+        error(err);
+        ui.notifications?.error(t("ATF.errors.syncFailed"));
+      }
+      return;
+    }
+
+    ui.notifications?.info(t("ATF.notify.tokenizerSavedHidden", { label: row[slot].label || slot }));
+  }
+
   static async #onRemoveActor(_event, target) {
     const { actorId } = target.dataset;
     await removeActorConfig(actorId);
@@ -213,7 +298,7 @@ function normalizeRow(row) {
   return {
     enabled: !!row.enabled,
     artMode: row.artMode === ART_MODES.RING ? ART_MODES.RING : ART_MODES.STANDARD,
-    a: { label: (row.a?.label ?? "").trim(), src: (row.a?.src ?? "").trim() },
-    b: { label: (row.b?.label ?? "").trim(), src: (row.b?.src ?? "").trim() },
+    a: { label: (row.a?.label ?? "").trim(), src: normalizePath(row.a?.src ?? "") },
+    b: { label: (row.b?.label ?? "").trim(), src: normalizePath(row.b?.src ?? "") },
   };
 }

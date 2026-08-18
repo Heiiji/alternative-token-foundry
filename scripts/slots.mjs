@@ -18,6 +18,34 @@ export function activeField(artMode) {
 }
 
 /**
+ * Prefer a saved art mode; otherwise infer ring-subject from `ring.enabled`.
+ * Never overwrites an explicit saved mode.
+ * @param {object} [tokenLike]  prototype or token document shape
+ * @param {string} [savedArtMode]
+ */
+export function inferArtMode(tokenLike, savedArtMode) {
+  if (savedArtMode === ART_MODES.RING || savedArtMode === ART_MODES.STANDARD) {
+    return savedArtMode;
+  }
+  if (tokenLike?.ring?.enabled) return ART_MODES.RING;
+  return ART_MODES.STANDARD;
+}
+
+/**
+ * Current artwork on a prototype/token for the given art mode.
+ * @param {object} [tokenLike]
+ * @param {string} artMode
+ * @returns {string}
+ */
+export function currentArtSrc(tokenLike, artMode) {
+  if (!tokenLike) return "";
+  if (artMode === ART_MODES.RING) {
+    return tokenLike.ring?.subject?.texture ?? "";
+  }
+  return tokenLike.texture?.src ?? "";
+}
+
+/**
  * The opposite slot.
  * @param {"a"|"b"} slot
  * @returns {"a"|"b"}

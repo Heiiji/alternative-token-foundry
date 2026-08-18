@@ -193,16 +193,18 @@ alternative-token-foundry/
 ├── scripts/
 │   ├── main.mjs                   # hook wiring
 │   ├── constants.mjs              # ids, keys, t() helper
-│   ├── paths.mjs        (pure)    # normalizePath
-│   ├── slots.mjs        (pure)    # activeField, resolveActiveSlot, otherSlot
+│   ├── paths.mjs        (pure)    # normalizePath, cacheBustPath
+│   ├── slots.mjs        (pure)    # activeField, resolveActiveSlot, otherSlot, currentArtSrc
 │   ├── authority.mjs    (pure)    # electPrimaryGM
 │   ├── validation.mjs   (pure)    # validateActorConfig, validateSwitchRequest
 │   ├── sync-plan.mjs    (pure)    # buildTokenUpdate/PrototypeUpdate, planSceneUpdates, planRollback
 │   ├── animation.mjs    (pure)    # TokenAnimationTransition list, options bag
+│   ├── tokenizer-bridge.mjs       # optional vtta-tokenizer launch + pure helpers
 │   ├── settings.mjs               # register setting + GM menu
 │   ├── config-repository.mjs      # read/write config, per-actor lookup
 │   ├── config-app.mjs             # ApplicationV2 config screen
 │   ├── hud-controller.mjs         # renderTokenHUD handler + button states
+│   ├── dialog.mjs                 # out-of-sync / GM-adopt dialogs
 │   ├── request-service.mjs        # player request + GM processing + per-actor queue
 │   └── sync-service.mjs           # synchronizeAppearance + rollback
 ├── templates/config.hbs
@@ -310,4 +312,45 @@ flag stays path-free; the transition is not player-controlled.
   reconciliation (correction, not a player switch).
 - **Broadcast:** `animation` rides on the same document operation as `atfInternal`, so every
   client that currently has the token drawn plays `TextureTransitionFilter`.
+
+---
+
+## 16. Amendment (v0.0.5): optional Tokenizer compatibility
+
+Some GMs also run [Tokenizer](https://github.com/MrPrimate/tokenizer) (`vtta-tokenizer`). ATF
+treats it as an optional **image factory** and stays the **approved-pair switcher**. There is
+**no** `relationships.requires` (or `recommends`): File Picker remains the fallback.
+
+**Launch.** Each slot in the GM config (settings menu and HUD-scoped modal) gets a
+**Tokenize…** button when Tokenizer is active, the user is a GM, and `FILES_UPLOAD` is
+granted. ATF calls `api.launch(options, callback)` — never `tokenizeActor` /
+`tokenizeSceneToken` / `autoToken`, and never Tokenizer's default `updateActor` (that writes
+the actor portrait, always `prototypeToken.texture.src`, may flip Dynamic Ring / reset scale,
+and only updates the current scene). Options omit `actor` and `token`. `nameSuffix` is
+`.atf.${actorId}.${slot}` so A and B cannot overwrite `{slug}.Token.webp`. Cancel does not
+call the callback. Tokenizer's singleton window (`tokenizer-control`) is not force-replaced
+if already open.
+
+**Callback.** Persist `normalizePath(tokenFilename)` into that slot of the GM-only world
+setting. Ignore `avatarFilename`. If the tokenized slot is already the showing appearance,
+run `synchronizeAppearance` with a cache-bust query on the **document write only** (config
+stores the clean path). Hidden slot and out-of-sync: config only — do not surprise-switch.
+Players still only write `"a"` / `"b"`.
+
+**Sheet Tokenizer.** Native Tokenizer entry points are not intercepted (no save hook). The
+HUD warning stays. **Players** still pick an approved form (revert). **GMs** get an adopt
+dialog: assign the current art to A or B without changing what the token shows.
+
+**Ring-subject.** ATF does not pass `forceDynamicRing`. GMs use Tokenizer's Apply Dynamic
+preset; a baked circular frame double-frames under Foundry rings.
+
+**Hygiene.** Slot `src` is stored normalized. `imagesMustDiffer` uses `samePath`. *Use
+current as A* reads `activeField(artMode)`. Fresh configs infer `ring-subject` from
+`prototypeToken.ring.enabled` without overwriting a saved mode. No `schemaVersion` bump.
+
+**Live QA (Tokenizer on, V13/V14):** tokenize A then B from the HUD-scoped config → two
+files, portrait unchanged, canvas updates only for the live slot; re-tokenize B only → A
+intact; empty B → Cancel writes nothing; sheet Tokenizer → HUD warns → GM adopt as A vs
+player revert; Tokenizer inactive → no Tokenize button; ring-subject *Use current* + switch
+still use `ring.subject.texture`.
 

@@ -6,11 +6,12 @@
  */
 
 import { t, error } from "./constants.mjs";
-import { getActorConfig } from "./config-repository.mjs";
+import { getActorConfig, setActorConfig } from "./config-repository.mjs";
 import { getPrimaryActiveGMId } from "./authority.mjs";
-import { activeField, otherSlot, resolveActiveSlot } from "./slots.mjs";
+import { currentArtSrc, otherSlot, resolveActiveSlot } from "./slots.mjs";
+import { normalizePath, samePath } from "./paths.mjs";
 import { requestAppearanceChange } from "./request-service.mjs";
-import { promptSlotChoice } from "./dialog.mjs";
+import { promptAdoptSlot, promptSlotChoice } from "./dialog.mjs";
 import { AtfConfigApp } from "./config-app.mjs";
 
 /**
@@ -43,12 +44,10 @@ export function onRenderTokenHUD(hud, element) {
   const config = getActorConfig(actor.id);
   if (!config?.enabled || !config.a?.src || !config.b?.src) return;
 
-  const field = activeField(config.artMode);
   // Source of truth: the prototype for linked tokens (character-level), the token
   // itself for unlinked tokens (each unlinked token is independent).
-  const activeSrc = tokenDoc.isLinked
-    ? foundry.utils.getProperty(actor.prototypeToken, field)
-    : foundry.utils.getProperty(tokenDoc, field);
+  const artSource = tokenDoc.isLinked ? actor.prototypeToken : tokenDoc;
+  const activeSrc = currentArtSrc(artSource, config.artMode);
   const active = resolveActiveSlot(activeSrc, config);
   const target = active ? otherSlot(active) : null;
 
@@ -61,6 +60,13 @@ export function onRenderTokenHUD(hud, element) {
 
     let slot = target;
     if (!active) {
+      if (game.user.isGM) {
+        slot = await promptAdoptSlot(config);
+        if (!slot) return;
+        const adopted = await adoptCurrentAppearance(actor, tokenDoc, config, slot);
+        if (adopted) hud.render?.();
+        return;
+      }
       slot = await promptSlotChoice(config);
       if (!slot) return;
     }
@@ -91,7 +97,7 @@ function buildButton(config, active, target) {
   if (!active) {
     iconClass = "fa-solid fa-triangle-exclamation";
     button.classList.add("atf-warn");
-    tooltip = t("ATF.hud.outOfSync");
+    tooltip = game.user.isGM ? t("ATF.hud.outOfSyncGm") : t("ATF.hud.outOfSync");
   } else {
     tooltip = t("ATF.hud.switchTo", { label: config[target].label });
   }
@@ -104,6 +110,39 @@ function buildButton(config, active, target) {
   button.innerHTML = `<i class="${iconClass} fa-fw"></i>`;
   button.dataset.tooltip = tooltip;
   return button;
+}
+
+/**
+ * Write the currently showing image into a slot. Does not switch the token —
+ * it is already displaying that art.
+ * @returns {Promise<boolean>}
+ */
+async function adoptCurrentAppearance(actor, tokenDoc, config, slot) {
+  const artSource = tokenDoc.isLinked ? actor.prototypeToken : tokenDoc;
+  const src = normalizePath(currentArtSrc(artSource, config.artMode));
+  if (!src) {
+    ui.notifications?.warn(t("ATF.errors.noImage"));
+    return false;
+  }
+
+  const next = {
+    ...config,
+    [slot]: { label: config[slot]?.label ?? "", src },
+  };
+  if (samePath(next.a?.src, next.b?.src)) {
+    ui.notifications?.error(t("ATF.errors.imagesMustDiffer"));
+    return false;
+  }
+
+  try {
+    await setActorConfig(actor.id, next);
+    ui.notifications?.info(t("ATF.notify.adopted", { label: next[slot].label || slot }));
+    return true;
+  } catch (err) {
+    error(err);
+    ui.notifications?.error(t("ATF.errors.syncFailed"));
+    return false;
+  }
 }
 
 async function doSwitch(actor, slot, button, tokenUuid) {

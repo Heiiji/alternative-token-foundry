@@ -58,6 +58,23 @@ linked tokens (updates the whole character) and unlinked tokens (updates that to
 
 Choose per character; mixed setups are fine.
 
+## Tokenizer (optional)
+
+If [Tokenizer](https://foundryvtt.com/packages/vtta-tokenizer) is also enabled, each slot in
+the GM config (including the HUD pen modal) gets a **Tokenize…** button. That opens Tokenizer
+for **that appearance only**, saves a uniquely named token file, and writes the path into the
+slot. The character portrait is never changed.
+
+- Tokenize A and B separately so the two forms do not overwrite `{name}.Token.webp`.
+- Tokenizing the appearance currently on the canvas updates the token; tokenizing the hidden
+  form only stores the file for the next switch.
+- Without Tokenizer, the File Picker works as before. ATF does not depend on Tokenizer.
+- If you tokenize from the actor sheet instead, ATF will not intercept that save. The HUD
+  warning lets the GM **assign** the new art to A or B; players can only revert to an
+  approved form.
+- For **Dynamic ring subject** characters, use Tokenizer's **Apply Dynamic** preset. A baked
+  circular frame double-frames under Foundry's rings.
+
 ## How it works (short version)
 
 Approved images live in a **GM-only world setting**. A player click writes a tiny, path-free
@@ -78,7 +95,7 @@ await api.requestAppearanceChange(actor, "b"); // request slot B for an owned ac
 
 ```bash
 npm install
-npm test        # vitest — covers the pure logic (paths, slots, validation, election, sync plan, transitions)
+npm test        # vitest — covers the pure logic (paths, slots, validation, election, sync plan, transitions, tokenizer bridge)
 ```
 
 Release: push a tag `vX.Y.Z`; GitHub Actions builds `module.zip`, stamps `module.json`, and
@@ -98,6 +115,7 @@ images définies par le MJ**, jamais vers un fichier arbitraire.
 - **Installation** : Modules → Installer un module, coller l'URL de manifeste ci-dessus.
 - **MJ** : *Configurer les paramètres → Images de jeton alternatives* (réservé au MJ). Sous
   *Alternative Token Foundry*, choisir la **transition d'apparence** (fondu par défaut).
+  Si **Tokenizer** est actif, chaque emplacement a un bouton **Tokeniser…**.
 - **Joueur** : clic droit sur le jeton → bouton masques du HUD.
 
 ## License

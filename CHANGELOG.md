@@ -6,6 +6,21 @@ All notable changes to this project are documented here. The format is loosely b
 
 ## [Unreleased]
 
+## [0.0.5] — 2026-08-18
+
+### Added
+- Optional **Tokenizer** integration: a per-slot **Tokenize…** button in the GM config
+  launches Tokenizer with a unique filename suffix and writes the token image (not the
+  portrait) into that slot. Tokenizing the appearance currently on the canvas updates the
+  token; tokenizing the other form only stores the file.
+- GM out-of-sync HUD dialog can **assign** the current art to appearance A or B, so a
+  sheet-launched Tokenizer save is not discarded. Players still revert to an approved form.
+
+### Changed
+- Config paths are stored normalized (query strings stripped). Duplicate detection uses the
+  same path comparison as the HUD.
+- *Use current as A* reads the art-mode field (ring subject vs standard texture).
+
 ## [0.0.4] — 2026-08-12
 
 ### Added
@@ -44,7 +59,8 @@ All notable changes to this project are documented here. The format is loosely b
   multi-GM authority election, per-actor request queue, best-effort rollback, standard and
   Dynamic Token Ring art modes, `createToken` reconciliation, and EN + FR localization.
 
-[Unreleased]: https://github.com/Heiiji/alternative-token-foundry/compare/v0.0.4...HEAD
+[Unreleased]: https://github.com/Heiiji/alternative-token-foundry/compare/v0.0.5...HEAD
+[0.0.5]: https://github.com/Heiiji/alternative-token-foundry/releases/tag/v0.0.5
 [0.0.4]: https://github.com/Heiiji/alternative-token-foundry/releases/tag/v0.0.4
 [0.0.3]: https://github.com/Heiiji/alternative-token-foundry/releases/tag/v0.0.3
 [0.0.2]: https://github.com/Heiiji/alternative-token-foundry/releases/tag/v0.0.2

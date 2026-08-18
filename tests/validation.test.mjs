@@ -21,6 +21,14 @@ describe("validateActorConfig", () => {
     expect(validateActorConfig(cfg)).toContain("ATF.errors.imagesMustDiffer");
   });
 
+  it("treats cache-busted copies of the same file as duplicates", () => {
+    const cfg = {
+      a: { label: "x", src: "tokens/a.webp?1" },
+      b: { label: "y", src: "tokens/a.webp?2" },
+    };
+    expect(validateActorConfig(cfg)).toContain("ATF.errors.imagesMustDiffer");
+  });
+
   it("requires both labels", () => {
     expect(validateActorConfig({ ...valid, a: { label: "  ", src: "tokens/a.webp" } })).toContain(
       "ATF.errors.labelARequired",
